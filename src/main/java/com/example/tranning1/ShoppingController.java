@@ -18,7 +18,7 @@ public class ShoppingController {
 	@GetMapping("/shopping/list/{user}")
 	public String getShowShoppingListPage(@PathVariable("user") String user)
 	{
-		String result="<h1>Hello world, "+user+"!</h1>";
+		String result="<h1>Hello world daenish, "+user+"!</h1>";
 	    result+="<p>My shopping List:</p>";
 		if(shoppingList.isEmpty())
 		{
