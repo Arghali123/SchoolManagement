@@ -2,18 +2,19 @@ package com.example.tranning1;
 
 import java.security.SecureRandom;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class UsefulMethod {
+	
 
+	static String COOKIE_NAME="Nepathya";
+	
 	static String sampleSpace="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
 	static int SIZE=sampleSpace.length();
-	
-	@GetMapping("/generateRadom/{num}")
-	public String getRandomString(@PathVariable("num") int len)
+
+	public static String getRandomString(int len)
 	{
 		SecureRandom random=new SecureRandom();
 		String ans="";
