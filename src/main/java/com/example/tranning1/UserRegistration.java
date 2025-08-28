@@ -15,44 +15,18 @@ import jakarta.servlet.http.HttpServletResponse;
 @RestController
 public class UserRegistration {
 
-	List<LoginInfo> allLoggedInUsers=new ArrayList<>();
+	 static List<LoginInfo> allLoggedInUsers=new ArrayList<>();
 	
 	@GetMapping("/")
 	public String getHomePage(HttpServletRequest request,HttpServletResponse response) throws IOException
 	{
-		//Check if user has token
-		Cookie[] cookies=request.getCookies();
-		boolean userLoggedIn=false;
-		String token=null;
-		
-		if(cookies!=null)
+		//Check if user has token in their cookies
+		LoginInfo info=UsefulMethod.getLoggedInUser(request);
+		if(info!=null)
 		{
-			for(Cookie cookie:cookies)
-			{
-				if(cookie.getName().equals("SECUREID"))
-				{
-					userLoggedIn=true;
-					token=cookie.getValue();
-					break;
-				}
-			}
-		}
-		
-		if(userLoggedIn)
-		{
-			//user's cookie has SECUREID (which was probably given by the server)
-			//TODO: greet the user
-			
-			String username=null;
-			for(LoginInfo loginInfo:allLoggedInUsers)
-			{
-				if(loginInfo.getToken().equals(token))
-				{
-					username=loginInfo.getUsername();
-					break;
-				}
-			}
-			return "<h2>Hello,"+username+"!</h2>";
+			return "<h2>Hello,"+info.getUsername()+"!</h2>"+"""
+					<a href="/profile">Profile</a>
+					"""+"<p>Name: "+info.getFullname()+",Emai: "+info.getEmail()+"</p>";
 		}else
 		{
 			response.sendRedirect("/login");
@@ -65,14 +39,55 @@ public class UserRegistration {
     {
 		return """
 				<form action="/login/save" method="get">
-				  <input type="text" placeholder="User name" name="username"/>
+				  <input type="text" placeholder="Username" name="username"/>
 				  <input type="submit" value="LOGIN"/>
 				</form>
 				""";
     }
 	
+	@GetMapping("/profile")
+	public String getProfilePage(HttpServletRequest request,HttpServletResponse response) throws IOException
+	{
+      LoginInfo info=UsefulMethod.getLoggedInUser(request);
+      if(info!=null)
+      {
+    	  //user's cookie has SECUREID(which was probably given by the server
+    	  return "<h2>Hello,"+info.getUsername()+"!</h2>"+"""
+    	  		  <form action="/profile/save" method="get">
+    	  		   <input type="text" placeholder="Full Name" name="fullname"/>
+    	  		   <input type="email" placeholder="Email" name="email"/>
+    	  		   <input type="submit" value="SAVE"/>
+    	  		  </form>
+    	  		""";
+      }else
+      {
+    	  response.sendRedirect("/login");
+      }
+      return "";
+	}
+	
+
+	@GetMapping("/profile/save")
+	public String saveProfile(@RequestParam("fullname") String fullName,@RequestParam("email") String email,
+			HttpServletRequest request,HttpServletResponse response) throws IOException
+	{
+		LoginInfo info=UsefulMethod.getLoggedInUser(request);
+		if(info!=null)
+		{
+			//actually save the fullname and email in database
+			info.setFullname(fullName);
+			info.setEmail(email);
+			response.sendRedirect("/");
+		}else
+		{
+			response.sendRedirect("/login");
+		}
+		return "";
+	}
+	
+	
 	@GetMapping("/login/save")
-	public String saveLoginPage(@RequestParam("username") String username,HttpServletResponse response)
+	public String saveLoginPage(@RequestParam("username") String username,HttpServletResponse response)throws IOException
 	{
 		//TODO: generate,save and provide new token to the user.
 		
@@ -88,9 +103,11 @@ public class UserRegistration {
 		cookie.setPath("/");
 		response.addCookie(cookie);
 		
+		response.sendRedirect("/");
+		
 		return "Login Submitted!";
 		
 	}
-    
 	
+
 }
